@@ -3,6 +3,8 @@
 namespace Appstract\Options;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class Option extends Model
 {
@@ -41,6 +43,7 @@ class Option extends Model
     public function exists($key)
     {
         return self::where('key', $key)->exists();
+        Cache::forget('laravel_options_' . Str::slug($key));
     }
 
     /**
@@ -52,8 +55,14 @@ class Option extends Model
      */
     public function get($key, $default = null)
     {
-        if ($option = self::where('key', $key)->first()) {
-            return $option->value;
+        $value = Cache::remember('laravel_options_' . Str::slug($key), 120, function () use ($key) {
+            if ($option = self::where('key', $key)->first()) {
+                return $option->value;
+            }
+        });
+
+        if(!is_null($value)) {
+            return $value;
         }
 
         return $default;
@@ -72,6 +81,7 @@ class Option extends Model
 
         foreach ($keys as $key => $value) {
             self::updateOrCreate(['key' => $key], ['value' => $value]);
+            Cache::put('laravel_options_' . Str::slug($key), $value);
         }
 
         // @todo: return the option
@@ -86,5 +96,6 @@ class Option extends Model
     public function remove($key)
     {
         return (bool) self::where('key', $key)->delete();
+        Cache::forget('laravel_options_' . Str::slug($key));
     }
 }
