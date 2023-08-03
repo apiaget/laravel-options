@@ -55,7 +55,7 @@ class Option extends Model
      */
     public function get($key, $default = null)
     {
-        $value = Cache::remember('laravel_options_' . Str::slug($key), 120, function () use ($key) {
+        $value = Cache::remember('laravel_options_' . Str::slug($key), 60*60*24, function () use ($key) {
             if ($option = self::where('key', $key)->first()) {
                 return $option->value;
             }
