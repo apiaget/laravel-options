@@ -42,8 +42,10 @@ class Option extends Model
      */
     public function exists($key)
     {
+        if (Cache::has('laravel_options_' . Str::slug($key))) {
+            return true;
+        }
         return self::where('key', $key)->exists();
-        Cache::forget('laravel_options_' . Str::slug($key));
     }
 
     /**
