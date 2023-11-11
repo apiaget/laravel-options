@@ -95,7 +95,7 @@ class Option extends Model
      */
     public function remove($key)
     {
-        return (bool) self::where('key', $key)->delete();
         Cache::forget('laravel_options_' . Str::slug($key));
+        return (bool) self::where('key', $key)->delete();
     }
 }
